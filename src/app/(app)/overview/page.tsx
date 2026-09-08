@@ -1,17 +1,31 @@
+"use client";
+
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Flame, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ReportBugModal } from "@/components/bugs/report-bug-modal";
+import { Flame, CheckCircle2, AlertTriangle, Clock, Plus } from "lucide-react";
 
 export default function OverviewPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <div className="p-8 space-y-8">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-paper">Good evening, Girum</h1>
-        <p className="mt-2 text-ash">
-          Your workspace has <span className="text-paper font-medium">18 active cases</span>.
-        </p>
+      {/* Greeting & Header Action */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-paper">Good evening, Girum</h1>
+          <p className="mt-1 text-ash">
+            Your workspace has <span className="text-paper font-medium">18 active cases</span>.
+          </p>
+        </div>
+        <Button variant="primary" className="gap-2" onClick={() => setIsModalOpen(true)}>
+          <Plus className="h-4 w-4" /> Report Case
+        </Button>
       </div>
 
+      {/* Stats row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="relative overflow-hidden">
           <CardHeader className="pb-2">
@@ -91,6 +105,8 @@ export default function OverviewPage() {
           </div>
         </CardContent>
       </Card>
+
+      <ReportBugModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }
