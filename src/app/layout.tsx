@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bugroom — Every bug has a story",
+  title: "Bugroom â€” Every bug has a story",
   description: "Find it. Fix it. Remember it. Forensic bug tracking and investigation room.",
 };
 
@@ -25,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang=\"en\" className=\"dark\">
-      <body className={\\ \ bg-midnight text-paper min-h-screen antialiased\}>
+    <html lang="en" className="dark">
+      <body className={`${inter.variable} ${jetbrainsMono.variable} bg-midnight text-paper min-h-screen antialiased`}>
         {children}
       </body>
     </html>
