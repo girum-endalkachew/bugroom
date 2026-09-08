@@ -2,21 +2,26 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { X, Plus, Trash2, Flame, Terminal, AlertCircle } from "lucide-react";
+import { useBugs } from "@/context/bug-context";
+import { Severity } from "@/types/bug";
+import { X, Plus, Trash2, Flame } from "lucide-react";
 
 interface ReportBugModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit?: (bugData: any) => void;
 }
 
 export function ReportBugModal({ isOpen, onClose }: ReportBugModalProps) {
+  const { addBug } = useBugs();
+
   const [title, setTitle] = useState("");
   const [project, setProject] = useState("ACA");
-  const [severity, setSeverity] = useState<"critical" | "high" | "medium" | "low">("high");
+  const [severity, setSeverity] = useState<Severity>("high");
   const [description, setDescription] = useState("");
-  const [steps, setSteps] = useState<string[]>(["Open application landing page", "Click submit without entering email"]);
+  const [steps, setSteps] = useState<string[]>([
+    "Open application landing page",
+    "Submit form with empty credentials",
+  ]);
 
   if (!isOpen) return null;
 
@@ -30,14 +35,24 @@ export function ReportBugModal({ isOpen, onClose }: ReportBugModalProps) {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("New case submitted to workspace!");
+    if (!title.trim()) return;
+
+    addBug({
+      title,
+      description,
+      project,
+      severity,
+      steps: steps.filter((s) => s.trim().length > 0),
+    });
+
+    setTitle("");
+    setDescription("");
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
       <div className="relative w-full max-w-2xl rounded-md border border-graphite-border bg-slate-card p-6 shadow-2xl space-y-6 my-8">
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-graphite-border pb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-ember-dim border border-ember-border text-ember">
@@ -54,7 +69,6 @@ export function ReportBugModal({ isOpen, onClose }: ReportBugModalProps) {
         </div>
 
         <form onSubmit={handleFormSubmit} className="space-y-5">
-          {/* Title & Project */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div className="sm:col-span-3 space-y-1.5">
               <label className="text-xs font-mono text-ash uppercase tracking-wider">Bug Title</label>
@@ -81,7 +95,6 @@ export function ReportBugModal({ isOpen, onClose }: ReportBugModalProps) {
             </div>
           </div>
 
-          {/* Severity selector */}
           <div className="space-y-1.5">
             <label className="text-xs font-mono text-ash uppercase tracking-wider">Severity Level</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -94,9 +107,11 @@ export function ReportBugModal({ isOpen, onClose }: ReportBugModalProps) {
                 <button
                   key={s.id}
                   type="button"
-                  onClick={() => setSeverity(s.id as any)}
+                  onClick={() => setSeverity(s.id as Severity)}
                   className={`py-2 px-3 rounded-sm border text-xs font-mono font-medium transition-all ${
-                    severity === s.id ? s.border : "border-graphite-border text-ash bg-midnight-950 opacity-60 hover:opacity-100"
+                    severity === s.id
+                      ? s.border
+                      : "border-graphite-border text-ash bg-midnight-950 opacity-60 hover:opacity-100"
                   }`}
                 >
                   {s.label}
@@ -105,7 +120,6 @@ export function ReportBugModal({ isOpen, onClose }: ReportBugModalProps) {
             </div>
           </div>
 
-          {/* Story / Description */}
           <div className="space-y-1.5">
             <label className="text-xs font-mono text-ash uppercase tracking-wider">Story · What Happened</label>
             <textarea
@@ -117,7 +131,6 @@ export function ReportBugModal({ isOpen, onClose }: ReportBugModalProps) {
             />
           </div>
 
-          {/* Reproduction steps */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-mono text-ash uppercase tracking-wider">Reproduction Flow Steps</label>
@@ -132,7 +145,9 @@ export function ReportBugModal({ isOpen, onClose }: ReportBugModalProps) {
             <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
               {steps.map((st, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-ember w-6 text-right font-bold">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="font-mono text-xs text-ember w-6 text-right font-bold">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
                   <input
                     type="text"
                     value={st}
@@ -150,7 +165,6 @@ export function ReportBugModal({ isOpen, onClose }: ReportBugModalProps) {
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-graphite-border">
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancel

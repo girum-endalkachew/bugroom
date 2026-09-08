@@ -2,67 +2,13 @@
 
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ReportBugModal } from "@/components/bugs/report-bug-modal";
-import { BugCase, BugStatus } from "@/types/bug";
-import { Plus, Search, Filter, LayoutList, Kanban, Flame, User } from "lucide-react";
+import { useBugs } from "@/context/bug-context";
+import { BugStatus } from "@/types/bug";
+import { Plus, Search, Filter, LayoutList, Kanban, User } from "lucide-react";
 import Link from "next/link";
-
-const mockBugs: BugCase[] = [
-  {
-    id: "BUG-0482",
-    title: "Authentication timeout intermittent failure",
-    description: "Users are intermittently logged out after submitting the login form.",
-    severity: "critical",
-    status: "investigating",
-    project: "ACA",
-    assignee: { name: "Girum" },
-    reportedAt: "2h ago",
-    updatedAt: "8m ago",
-    evidence: [],
-    reproduction: [],
-  },
-  {
-    id: "BUG-0481",
-    title: "Mobile menu fails to close on item click",
-    description: "Navigation overlay stays open after route change on iOS Safari.",
-    severity: "high",
-    status: "fixing",
-    project: "ACA",
-    assignee: { name: "Liya" },
-    reportedAt: "5h ago",
-    updatedAt: "1h ago",
-    evidence: [],
-    reproduction: [],
-  },
-  {
-    id: "BUG-0480",
-    title: "User avatar missing in settings page",
-    description: "404 on default gravatar fallback URL.",
-    severity: "low",
-    status: "resolved",
-    project: "ACA",
-    assignee: { name: "Eyuel" },
-    reportedAt: "1d ago",
-    updatedAt: "3h ago",
-    evidence: [],
-    reproduction: [],
-  },
-  {
-    id: "BUG-0479",
-    title: "Checkout process crash on empty promo code",
-    description: "Null pointer exception when applying empty discount field.",
-    severity: "high",
-    status: "verifying",
-    project: "ACA",
-    assignee: { name: "Girum" },
-    reportedAt: "1d ago",
-    updatedAt: "34m ago",
-    evidence: [],
-    reproduction: [],
-  },
-];
 
 const kanbanColumns: { id: BugStatus; title: string }[] = [
   { id: "reported", title: "Reported" },
@@ -73,12 +19,19 @@ const kanbanColumns: { id: BugStatus; title: string }[] = [
 ];
 
 export default function BugsPage() {
+  const { bugs } = useBugs();
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredBugs = bugs.filter(
+    (b) =>
+      b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="p-8 space-y-6">
-      {/* Top Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-paper">Cases</h1>
@@ -89,12 +42,13 @@ export default function BugsPage() {
         </Button>
       </div>
 
-      {/* Filter & View Switcher Bar */}
       <div className="flex items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ash" />
           <input
             type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search bugs by ID, title or stack trace..."
             className="w-full rounded-sm border border-graphite-border bg-slate-card py-2 pl-9 pr-4 text-sm text-paper placeholder:text-ash focus:border-ember focus:outline-none"
           />
@@ -125,7 +79,6 @@ export default function BugsPage() {
         </div>
       </div>
 
-      {/* LIST VIEW */}
       {viewMode === "list" && (
         <Card>
           <CardContent className="p-0">
@@ -142,7 +95,7 @@ export default function BugsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-graphite-border/60">
-                  {mockBugs.map((bug) => (
+                  {filteredBugs.map((bug) => (
                     <tr key={bug.id} className="group hover:bg-white/[0.02] transition-colors">
                       <td className="px-6 py-4 font-mono text-xs text-ember font-medium">
                         <Link href={`/bugs/${bug.id.toLowerCase()}`}>{bug.id}</Link>
@@ -169,11 +122,10 @@ export default function BugsPage() {
         </Card>
       )}
 
-      {/* KANBAN BOARD VIEW */}
       {viewMode === "kanban" && (
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto pb-4">
           {kanbanColumns.map((col) => {
-            const bugsInCol = mockBugs.filter((b) => b.status === col.id);
+            const bugsInCol = filteredBugs.filter((b) => b.status === col.id);
             return (
               <div key={col.id} className="rounded-md border border-graphite-border bg-midnight-950/60 p-3 space-y-3 min-w-[220px]">
                 <div className="flex items-center justify-between border-b border-graphite-border pb-2 font-mono text-xs">
@@ -203,7 +155,6 @@ export default function BugsPage() {
         </div>
       )}
 
-      {/* Modal */}
       <ReportBugModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
